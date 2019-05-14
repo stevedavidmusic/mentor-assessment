@@ -1,0 +1,9 @@
+.Master__text, .Master__input, .Master__addButton{
+    display: flex; 
+    justify-content: center; 
+}
+
+.Master__add{
+    display: flex; 
+    justify-content: center; 
+}
