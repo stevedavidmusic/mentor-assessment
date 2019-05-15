@@ -1,4 +1,9 @@
-.ToDo__container, .ToDo__taskName{
+ .ToDo__container{
     display: flex; 
-    justify-content: center; 
+    padding-left: 100px; 
+    /* justify-content: center;  */
 }
+
+/* button{
+
+}  */

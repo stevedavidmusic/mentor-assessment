@@ -3,60 +3,67 @@ import axios from "axios";
 import "../../App.css";
 import ToDo from "../ToDo/ToDo";
 import { connect } from "react-redux";
-import { add_task, complete_task, delete_task } from "../../redux/reducer";
-import './master.css'
+import { add_task, complete_task, delete_task, get_tasks } from "../../redux/reducer";
+import "./master.css";
 
 class Master extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      list: this.props.list,
+      list: [],
       input: "",
+      description: "",
       count: 0
     };
+    this.createToDo = this.createToDo.bind(this);
+  }
+
+  componentWillMount = () => {
+    this.props.get_tasks().then((response) =>{
+      this.setState({
+        list: response.value
+      })
+    })
+  }
+
+  componentDidUpdate = (prevProps) =>{
+    if (this.props.list !== prevProps.list) {
+      this.setState({
+        list: this.props.list
+      })
+    }
   }
 
   handleInputChange = value => {
     this.setState({ input: value });
   };
 
-  // handleAddTask = () => {
-  //   if (this.state.input == "") {
-  //     alert("NEEDS MORE COWBELL");
-  //   } else {
-  //     const newTask = {
-  //       text: this.state.input,
-  //       key: this.state.count++,
-  //       completed: false
-  //     };
-  //     this.setState({
-  //       list: [...this.state.list, newTask],
-  //       input: "",
-  //       count: this.state.count + 1
-  //     });
-  //   }
-  // };
+  handleDescriptionChange = value => {
+    this.setState({ description: value });
+    // console.log("DESCRIPTOIN VALUE", this.state.description)
+  };
+
 
   handleAddTask = () => {
     if (this.state.input == "") {
       alert("NEEDS MORE COWBELL");
     } else {
+      console.log("ADDING DESCRIPTION:", this.state.description)
       const newTask = {
         text: this.state.input,
+        description: "",
         key: this.state.count++,
         completed: false
       };
-      this.props.add_task(newTask)
-      console.log("THIS.PROPS.LIST:", this.props.list)
-      console.log("THIS.STATE AFTERMATH:", this.state)
+      // console.log("ADD NEW TASK PROPS", this.props)
+      this.props.add_task(newTask);
       this.setState({
-        list: this.props.list 
+        list: this.props.list,
+        input: "",
+        description: ""
       })
-      // this.setState({
-      //   list: [...this.props.list, newTask],
-      //   input: "",
-      //   count: this.state.count + 1
-      // });
+      console.log("GET MORE TASKS")
+      this.props.get_tasks()
     }
   };
 
@@ -67,7 +74,7 @@ class Master extends Component {
         copyList[i].completed = true;
       }
     }
-    this.props.complete_task(copyList)
+    this.props.complete_task(copyList);
     this.setState({
       list: copyList
     });
@@ -79,32 +86,24 @@ class Master extends Component {
       if (copyList[i].key === key) {
         copyList.splice(copyList.indexOf(copyList[i]), 1);
       }
-      this.props.delete_task(copyList)
+      this.props.delete_task(copyList);
       this.setState({
         list: copyList
       });
     }
   };
 
-  render() {
+  createToDo(){
     var strikeThrough = {
       textDecoration: "line-through",
       color: "red"
     };
-
-    let list = this.state.list.map((element, index) => {
-      // console.log(
-      //   "LIST",
-      //   this.state.list,
-      //   this.state.list[0],
-      //   "COMPLETED?",
-      //   element.completed
-      // );
-
+      return this.props.list.map((element, index) => {
+      // console.log("MAPPING!")
       return (
         <ToDo
           status={element.completed}
-          list={/*this.state.list*/ this.props.list}
+          list={/*this.state.list*/ this.state.list}
           key={index}
           task={element}
           completed={this.state.completed}
@@ -115,6 +114,10 @@ class Master extends Component {
       );
     });
 
+  }
+
+  render() {
+
     return (
       <div className="Master">
         <div className="Master__text">
@@ -122,25 +125,25 @@ class Master extends Component {
         </div>
         <div className="Master__add">
           <div className="Master__input">
-          <input
-            value={this.state.input}
-            placeholder="Enter new task"
-            onChange={e => this.handleInputChange(e.target.value)}
-          />
+            <input
+              value={this.state.input}
+              placeholder="Enter new task"
+              onChange={e => this.handleInputChange(e.target.value)}
+            />
           </div>
           <div className="Master__addButton">
-          <button onClick={this.handleAddTask}>Add</button>
+            <button onClick={(e) => this.handleAddTask(e)}>Add</button>
           </div>
         </div>
         <br />
-        {list}
+        {this.createToDo()}
       </div>
     );
   }
 }
 
 const mapStateToProps = reducerState => {
-  console.log("reducerState:", reducerState)
+  // console.log("reducerState:", reducerState);
   return {
     list: reducerState.list
   };
@@ -151,7 +154,7 @@ export default connect(
   {
     add_task,
     complete_task,
-    delete_task
+    delete_task,
+    get_tasks
   }
 )(Master);
-
